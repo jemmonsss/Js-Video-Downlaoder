@@ -1,5 +1,3 @@
-const apiBase = 'https://yt-dlp-web.vercel.app/api/download?url=';
-
 const urlInput = document.getElementById('urlInput');
 const fetchBtn = document.getElementById('fetchBtn');
 const formatSelect = document.getElementById('formatSelect');
@@ -12,55 +10,41 @@ fetchBtn.addEventListener('click', async () => {
   const url = urlInput.value.trim();
   if (!url) return statusDiv.textContent = 'Enter a valid video URL.';
 
-  statusDiv.textContent = 'Fetching formats...';
+  statusDiv.textContent = 'Fetching video info...';
   formatSelect.style.display = 'none';
   downloadBtn.style.display = 'none';
   formatSelect.innerHTML = '';
 
   try {
-    const res = await fetch(apiBase + encodeURIComponent(url));
+    const res = await fetch(`https://youtube-dl-api.matheus.workers.dev/?url=${encodeURIComponent(url)}`);
     const data = await res.json();
 
-    if (!data.formats || data.formats.length === 0) {
-      statusDiv.textContent = 'No formats found.';
+    if (!data.url) {
+      statusDiv.textContent = 'No downloadable video found.';
       return;
     }
 
-    formats = data.formats.filter(f => f.ext === 'mp4' && f.vcodec !== 'none');
-
-    if (formats.length === 0) {
-      statusDiv.textContent = 'No video formats available.';
-      return;
-    }
-
-    formats.forEach((f, i) => {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `${f.format_note || f.height + 'p'} (${f.ext}, ${f.filesize ? (f.filesize / 1024 / 1024).toFixed(1) + ' MB' : 'unknown'})`;
-      formatSelect.appendChild(opt);
-    });
+    // Build one default option since API doesn't provide format list
+    const opt = document.createElement('option');
+    opt.value = data.url;
+    opt.textContent = 'Default Format (MP4, auto quality)';
+    formatSelect.appendChild(opt);
 
     formatSelect.style.display = 'block';
     downloadBtn.style.display = 'block';
-    statusDiv.textContent = `Choose a format to download.`;
+    statusDiv.textContent = 'Video found. Ready to download.';
   } catch (err) {
     console.error(err);
-    statusDiv.textContent = 'Failed to fetch formats.';
+    statusDiv.textContent = 'Failed to fetch video info.';
   }
 });
 
 downloadBtn.addEventListener('click', () => {
-  const selectedIndex = formatSelect.value;
-  const chosen = formats[selectedIndex];
-
-  if (!chosen || !chosen.url) {
-    statusDiv.textContent = 'Invalid format selected.';
-    return;
-  }
+  const chosenUrl = formatSelect.value;
 
   const a = document.createElement('a');
-  a.href = chosen.url;
-  a.download = (chosen.format_note || 'video') + '.mp4';
+  a.href = chosenUrl;
+  a.download = 'video.mp4';
   document.body.appendChild(a);
   a.click();
   a.remove();
