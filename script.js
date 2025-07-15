@@ -6,36 +6,22 @@ const statusDiv = document.getElementById('status');
 
 let formats = [];
 
-// Try multiple APIs
+// ✅ CORS-friendly wrapped APIs
 const apis = [
-  url => `https://yt-dlp-api.up.railway.app/info?url=${encodeURIComponent(url)}`,
-  url => `https://youtube-dl-api.matheus.workers.dev/?url=${encodeURIComponent(url)}`,
-  url => {
-    const id = extractYouTubeId(url);
-    return id ? `https://pipedapi.kavin.rocks/streams/${id}` : null;
-  }
+  url => `https://corsproxy.io/?https://yt-dlp-api.up.railway.app/info?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?https://youtube-dl-api.matheus.workers.dev/?url=${encodeURIComponent(url)}`
 ];
-
-function extractYouTubeId(url) {
-  try {
-    const match = url.match(/v=([^&]+)/) || url.match(/youtu\.be\/([^?]+)/);
-    return match ? match[1] : '';
-  } catch {
-    return '';
-  }
-}
 
 async function tryAPIs(videoUrl) {
   const promises = apis.map(api => {
     const endpoint = api(videoUrl);
-    if (!endpoint) return null;
-    return fetch(endpoint).then(r => r.ok ? r.json() : null).catch(() => null);
+    return fetch(endpoint).then(res => res.ok ? res.json() : null).catch(() => null);
   });
 
   const results = await Promise.all(promises);
   for (const result of results) {
     if (!result) continue;
-    if (result.formats || result.url || result.videoStreams) return result;
+    if (result.formats || result.url) return result;
   }
   return null;
 }
@@ -59,7 +45,10 @@ fetchBtn.addEventListener('click', async () => {
 
   if (data.formats) {
     formats = data.formats.filter(f =>
-      f.ext === 'mp4' && f.url && f.vcodec !== 'none' && f.acodec !== 'none'
+      f.ext === 'mp4' &&
+      f.url &&
+      f.vcodec !== 'none' &&
+      f.acodec !== 'none'
     );
     formats.forEach((f, i) => {
       const opt = document.createElement('option');
@@ -75,18 +64,6 @@ fetchBtn.addEventListener('click', async () => {
     opt.value = 0;
     opt.textContent = 'Default format (MP4)';
     formatSelect.appendChild(opt);
-  } else if (data.videoStreams) {
-    formats = data.videoStreams.map(f => ({
-      url: f.url,
-      format_note: f.quality,
-      ext: 'mp4'
-    }));
-    formats.forEach((f, i) => {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `${f.format_note} - ${f.ext}`;
-      formatSelect.appendChild(opt);
-    });
   }
 
   if (formats.length === 0) {
@@ -96,7 +73,7 @@ fetchBtn.addEventListener('click', async () => {
 
   formatSelect.style.display = 'block';
   downloadBtn.style.display = 'block';
-  statusDiv.textContent = 'Formats loaded.';
+  statusDiv.textContent = 'Formats loaded. Choose one to download.';
 });
 
 downloadBtn.addEventListener('click', () => {
