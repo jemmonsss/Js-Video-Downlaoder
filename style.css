@@ -6,39 +6,70 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  margin: 0;
 }
 
 .container {
   background: #1e1e1e;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 0 10px #000;
+  box-shadow: 0 0 15px rgba(128, 0, 128, 0.3); /* purple shadow */
   width: 350px;
+  text-align: center;
 }
 
-input, select, button {
+h1 {
+  color: #d19fe8; /* light purple */
+  margin-bottom: 0.5rem;
+}
+
+.sub {
+  font-size: 0.9rem;
+  color: #bbb;
+  margin-bottom: 1.5rem;
+}
+
+input,
+select,
+button {
   width: 100%;
-  margin: .5rem 0;
-  padding: .6rem;
+  margin: 0.5rem 0;
+  padding: 0.6rem;
   border: none;
   border-radius: 4px;
   background: #2a2a2a;
   color: #eee;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+input::placeholder {
+  color: #999;
 }
 
 button {
-  background: #3a3a3a;
-  cursor: pointer;
+  background: #6e44aa; /* dark purple accent */
+  transition: background 0.3s ease;
+  font-weight: bold;
 }
 
 button:hover {
-  background: #505050;
+  background: #8e5bd9; /* lighter on hover */
 }
 
 #status {
   margin-top: 1rem;
   min-height: 1.2rem;
+  color: #ccc;
+  font-size: 0.9rem;
 }
+
+footer {
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
 
 @keyframes spinJ {
   from { content: 'J'; } to { content: '7'; }
